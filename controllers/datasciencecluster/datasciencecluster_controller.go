@@ -76,7 +76,8 @@ type DataScienceClusterConfig struct {
 }
 
 const (
-	finalizerName = "datasciencecluster.opendatahub.io/finalizer"
+	finalizerName     = "datasciencecluster.opendatahub.io/finalizer"
+	dsciFinalizerName = "dscinitialization.opendatahub.io/finalizer"
 )
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
@@ -153,7 +154,7 @@ func (r *DataScienceClusterReconciler) Reconcile(ctx context.Context, req ctrl.R
 
 		return ctrl.Result{}, err
 	}
-
+	var dsciInstance *dsci.DSCInitialization
 	// Update phase to error state if DataScienceCluster is created without valid DSCInitialization
 	switch len(dsciInstances.Items) { // only handle number as 0 or 1, others won't be existed since webhook block creation
 	case 0:
@@ -173,6 +174,7 @@ func (r *DataScienceClusterReconciler) Reconcile(ctx context.Context, req ctrl.R
 		}
 		return ctrl.Result{}, nil
 	case 1:
+		dsciInstance = &dsciInstances.Items[0]
 		dscInitializationSpec := dsciInstances.Items[0].Spec
 		dscInitializationSpec.DeepCopyInto(r.DataScienceCluster.DSCISpec)
 	}
@@ -192,6 +194,23 @@ func (r *DataScienceClusterReconciler) Reconcile(ctx context.Context, req ctrl.R
 				return ctrl.Result{}, err
 			}
 		}
+
+		if controllerutil.ContainsFinalizer(dsciInstance, dsciFinalizerName) {
+			if controllerutil.RemoveFinalizer(dsciInstance, dsciFinalizerName) {
+				if err := r.Update(ctx, dsciInstance); err != nil {
+					r.Log.Info("Error to remove DSCI finalzier", "error", err)
+					return ctrl.Result{}, err
+				}
+				r.Log.Info("Removed finalizer for DataScienceClusterInitialization", "name", dsciInstance.Name, "finalizer", dsciFinalizerName)
+			}
+		}
+
+		if err := r.Client.Delete(ctx, instance, []client.DeleteOption{}...); err != nil {
+			if !apierrs.IsNotFound(err) {
+				return reconcile.Result{}, err
+			}
+		}
+
 		if controllerutil.ContainsFinalizer(instance, finalizerName) {
 			controllerutil.RemoveFinalizer(instance, finalizerName)
 			if err := r.Update(ctx, instance); err != nil {
