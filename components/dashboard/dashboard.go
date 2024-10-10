@@ -13,12 +13,12 @@ import (
 	operatorv1 "github.com/openshift/api/operator/v1"
 	corev1 "k8s.io/api/core/v1"
 	k8serr "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 
 	dsciv1 "github.com/opendatahub-io/opendatahub-operator/v2/apis/dscinitialization/v1"
 	"github.com/opendatahub-io/opendatahub-operator/v2/components"
+	"github.com/opendatahub-io/opendatahub-operator/v2/controllers/status"
 	"github.com/opendatahub-io/opendatahub-operator/v2/pkg/cluster"
 	"github.com/opendatahub-io/opendatahub-operator/v2/pkg/deploy"
 )
@@ -82,9 +82,14 @@ func (d *Dashboard) GetComponentName() string {
 	return ComponentNameUpstream
 }
 
+func (d *Dashboard) UpdateStatus(in *status.ComponentsStatus) error {
+	in.Dashboard = &status.DashboardStatus{}
+	return nil
+}
+
 func (d *Dashboard) ReconcileComponent(ctx context.Context,
 	cli client.Client,
-	owner metav1.Object,
+	owner client.Object,
 	dscispec *dsciv1.DSCInitializationSpec,
 	platform cluster.Platform,
 	currentComponentExist bool,

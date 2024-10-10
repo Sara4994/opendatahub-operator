@@ -9,19 +9,21 @@ import (
 	"path/filepath"
 
 	operatorv1 "github.com/openshift/api/operator/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"github.com/operator-framework/api/pkg/lib/version"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 
 	dsciv1 "github.com/opendatahub-io/opendatahub-operator/v2/apis/dscinitialization/v1"
 	"github.com/opendatahub-io/opendatahub-operator/v2/components"
+	"github.com/opendatahub-io/opendatahub-operator/v2/controllers/status"
 	"github.com/opendatahub-io/opendatahub-operator/v2/pkg/cluster"
 	"github.com/opendatahub-io/opendatahub-operator/v2/pkg/deploy"
 )
 
 var (
-	ComponentName = "ray"
-	RayPath       = deploy.DefaultManifestPath + "/" + ComponentName + "/openshift"
+	ComponentName         = "ray"
+	RayPath               = deploy.DefaultManifestPath + "/" + ComponentName + "/openshift"
+	ComponentNameUpstream = "ray-project"
 )
 
 // Verifies that Ray implements ComponentInterface.
@@ -68,8 +70,31 @@ func (r *Ray) GetComponentName() string {
 	return ComponentName
 }
 
+func (r *Ray) UpdateStatus(in *status.ComponentsStatus) error {
+	rayStatus, err := r.GetReleaseVersion(in, deploy.DefaultManifestPath, ComponentName)
+
+	if err != nil {
+		in.Ray = &status.RayStatus{}
+		return err
+	}
+
+	in.Ray = &status.RayStatus{
+		ComponentStatus: status.ComponentStatus{
+			UpstreamReleases: []status.ComponentReleaseStatus{{
+				Name:        status.Platform(ComponentName),
+				DisplayName: ComponentName,
+				Version:     version.OperatorVersion{Version: rayStatus.ComponentVersion},
+				RepoURL:     rayStatus.RepositoryURL,
+			},
+			},
+		},
+	}
+
+	return nil
+}
+
 func (r *Ray) ReconcileComponent(ctx context.Context, cli client.Client,
-	owner metav1.Object, dscispec *dsciv1.DSCInitializationSpec, platform cluster.Platform, _ bool) error {
+	owner client.Object, dscispec *dsciv1.DSCInitializationSpec, platform cluster.Platform, _ bool) error {
 	l := logf.FromContext(ctx)
 	enabled := r.GetManagementState() == operatorv1.Managed
 	monitoringEnabled := dscispec.Monitoring.ManagementState == operatorv1.Managed

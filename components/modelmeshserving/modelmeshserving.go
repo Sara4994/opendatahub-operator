@@ -9,12 +9,13 @@ import (
 	"strings"
 
 	operatorv1 "github.com/openshift/api/operator/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"github.com/operator-framework/api/pkg/lib/version"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 
 	dsciv1 "github.com/opendatahub-io/opendatahub-operator/v2/apis/dscinitialization/v1"
 	"github.com/opendatahub-io/opendatahub-operator/v2/components"
+	"github.com/opendatahub-io/opendatahub-operator/v2/controllers/status"
 	"github.com/opendatahub-io/opendatahub-operator/v2/pkg/cluster"
 	"github.com/opendatahub-io/opendatahub-operator/v2/pkg/deploy"
 )
@@ -100,9 +101,32 @@ func (m *ModelMeshServing) GetComponentName() string {
 	return ComponentName
 }
 
+func (m *ModelMeshServing) UpdateStatus(in *status.ComponentsStatus) error {
+	modelMeshServingStatus, err := m.GetReleaseVersion(in, deploy.DefaultManifestPath, ComponentName)
+
+	if err != nil {
+		in.ModelMeshServing = &status.ModelMeshServingStatus{}
+		return err
+	}
+
+	in.ModelMeshServing = &status.ModelMeshServingStatus{
+		ComponentStatus: status.ComponentStatus{
+			UpstreamReleases: []status.ComponentReleaseStatus{{
+				Name:        status.Platform(ComponentName),
+				DisplayName: ComponentName,
+				Version:     version.OperatorVersion{Version: modelMeshServingStatus.ComponentVersion},
+				RepoURL:     modelMeshServingStatus.RepositoryURL,
+			},
+			},
+		},
+	}
+
+	return nil
+}
+
 func (m *ModelMeshServing) ReconcileComponent(ctx context.Context,
 	cli client.Client,
-	owner metav1.Object,
+	owner client.Object,
 	dscispec *dsciv1.DSCInitializationSpec,
 	platform cluster.Platform,
 	_ bool,

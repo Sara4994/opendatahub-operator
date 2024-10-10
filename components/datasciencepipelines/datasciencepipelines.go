@@ -10,10 +10,10 @@ import (
 
 	operatorv1 "github.com/openshift/api/operator/v1"
 	conditionsv1 "github.com/openshift/custom-resource-status/conditions/v1"
+	"github.com/operator-framework/api/pkg/lib/version"
 	corev1 "k8s.io/api/core/v1"
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	k8serr "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 
@@ -92,9 +92,32 @@ func (d *DataSciencePipelines) GetComponentName() string {
 	return ComponentName
 }
 
+func (d *DataSciencePipelines) UpdateStatus(in *status.ComponentsStatus) error {
+	dataSciencePipelinesStatus, err := d.GetReleaseVersion(in, deploy.DefaultManifestPath, ComponentName)
+
+	if err != nil {
+		in.DataSciencePipelines = &status.DataSciencePipelinesStatus{}
+		return err
+	}
+
+	in.DataSciencePipelines = &status.DataSciencePipelinesStatus{
+		ComponentStatus: status.ComponentStatus{
+			UpstreamReleases: []status.ComponentReleaseStatus{{
+				Name:        status.Platform(ComponentName),
+				DisplayName: ComponentName,
+				Version:     version.OperatorVersion{Version: dataSciencePipelinesStatus.ComponentVersion},
+				RepoURL:     dataSciencePipelinesStatus.RepositoryURL,
+			},
+			},
+		},
+	}
+
+	return nil
+}
+
 func (d *DataSciencePipelines) ReconcileComponent(ctx context.Context,
 	cli client.Client,
-	owner metav1.Object,
+	owner client.Object,
 	dscispec *dsciv1.DSCInitializationSpec,
 	platform cluster.Platform,
 	_ bool,

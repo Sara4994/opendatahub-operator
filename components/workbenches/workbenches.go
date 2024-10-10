@@ -9,12 +9,13 @@ import (
 	"strings"
 
 	operatorv1 "github.com/openshift/api/operator/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"github.com/operator-framework/api/pkg/lib/version"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 
 	dsciv1 "github.com/opendatahub-io/opendatahub-operator/v2/apis/dscinitialization/v1"
 	"github.com/opendatahub-io/opendatahub-operator/v2/components"
+	"github.com/opendatahub-io/opendatahub-operator/v2/controllers/status"
 	"github.com/opendatahub-io/opendatahub-operator/v2/pkg/cluster"
 	"github.com/opendatahub-io/opendatahub-operator/v2/pkg/deploy"
 	"github.com/opendatahub-io/opendatahub-operator/v2/pkg/metadata/labels"
@@ -110,8 +111,31 @@ func (w *Workbenches) GetComponentName() string {
 	return ComponentName
 }
 
+func (w *Workbenches) UpdateStatus(in *status.ComponentsStatus) error {
+	workbenchesStatus, err := w.GetReleaseVersion(in, deploy.DefaultManifestPath, ComponentName)
+
+	if err != nil {
+		in.Workbenches = &status.WorkbenchesStatus{}
+		return err
+	}
+
+	in.Workbenches = &status.WorkbenchesStatus{
+		ComponentStatus: status.ComponentStatus{
+			UpstreamReleases: []status.ComponentReleaseStatus{{
+				Name:        status.Platform(ComponentName),
+				DisplayName: ComponentName,
+				Version:     version.OperatorVersion{Version: workbenchesStatus.ComponentVersion},
+				RepoURL:     workbenchesStatus.RepositoryURL,
+			},
+			},
+		},
+	}
+
+	return nil
+}
+
 func (w *Workbenches) ReconcileComponent(ctx context.Context, cli client.Client,
-	owner metav1.Object, dscispec *dsciv1.DSCInitializationSpec, platform cluster.Platform, _ bool) error {
+	owner client.Object, dscispec *dsciv1.DSCInitializationSpec, platform cluster.Platform, _ bool) error {
 	l := logf.FromContext(ctx)
 	// Set default notebooks namespace
 	// Create rhods-notebooks namespace in managed platforms
