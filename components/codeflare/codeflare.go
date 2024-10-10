@@ -8,13 +8,17 @@ import (
 	"fmt"
 	"path/filepath"
 
+	"github.com/blang/semver/v4"
+	"github.com/joho/godotenv"
 	operatorv1 "github.com/openshift/api/operator/v1"
+	"github.com/operator-framework/api/pkg/lib/version"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 
 	dsciv1 "github.com/opendatahub-io/opendatahub-operator/v2/apis/dscinitialization/v1"
 	"github.com/opendatahub-io/opendatahub-operator/v2/components"
+	"github.com/opendatahub-io/opendatahub-operator/v2/controllers/status"
 	"github.com/opendatahub-io/opendatahub-operator/v2/pkg/cluster"
 	"github.com/opendatahub-io/opendatahub-operator/v2/pkg/deploy"
 )
@@ -69,6 +73,35 @@ func (c *CodeFlare) OverrideManifests(ctx context.Context, _ cluster.Platform) e
 
 func (c *CodeFlare) GetComponentName() string {
 	return ComponentName
+}
+
+func (c *CodeFlare) GetUpstreamReleaseStatus() status.UpstreamReleases {
+	var componentVersion semver.Version
+	var repositoryURL string
+	var releaseDetails = make([]status.ComponentReleaseStatus, 0)
+	var releaseStatus status.UpstreamReleases
+
+	env, err := godotenv.Read(filepath.Join(deploy.DefaultManifestPath, ComponentName, ".env"))
+
+	if err != nil {
+		return status.UpstreamReleases{}
+	}
+	if env != nil {
+		componentVersion, err = semver.Parse(env["UPSTREAM_RELEASE_VERSION"])
+
+		if err != nil {
+			return status.UpstreamReleases{}
+		}
+		repositoryURL = env["REPOSITORY_URL"]
+	}
+	componentReleaseStatus := status.ComponentReleaseStatus{
+		Name:        status.Platform(ComponentName),
+		DisplayName: CodeflareOperator,
+		Version:     version.OperatorVersion{Version: componentVersion},
+		RepoURL:     repositoryURL}
+	releaseDetails = append(releaseDetails, componentReleaseStatus)
+	releaseStatus.UpstreamRelease = releaseDetails
+	return releaseStatus
 }
 
 func (c *CodeFlare) ReconcileComponent(ctx context.Context,
