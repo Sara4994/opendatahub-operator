@@ -22,6 +22,7 @@ import (
 	conditionsv1 "github.com/openshift/custom-resource-status/conditions/v1"
 	"github.com/operator-framework/api/pkg/lib/version"
 	corev1 "k8s.io/api/core/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // These constants represent the overall Phase as used by .Status.Phase.
@@ -213,6 +214,11 @@ func RemoveComponentCondition(conditions *[]conditionsv1.Condition, component st
 
 type Platform string
 
+type ComponentObject interface {
+	client.Object
+	GetComponentsStatus() *ComponentsStatus
+}
+
 // Condition represents the state of the operator's
 // reconciliation functionality.
 // +k8s:deepcopy-gen=true
@@ -224,12 +230,89 @@ type ComponentReleaseStatus struct {
 }
 
 // +k8s:deepcopy-gen=true
-type UpstreamReleases struct {
+type ComponentStatus struct {
 	UpstreamRelease []ComponentReleaseStatus `json:"upstreamrelease,omitempty"`
 }
 
 // +k8s:deepcopy-gen=true
-type ComponentStatus struct {
+// DashboardStatus struct holds the status for the Dashboard component.
+type DashboardStatus struct {
+	ComponentStatus `json:",inline"`
+}
+
+// +k8s:deepcopy-gen=true
+// WorkbenchesStatus struct holds the status for the Workbenches component.
+type WorkbenchesStatus struct {
+	ComponentStatus `json:",inline"`
+}
+
+// +k8s:deepcopy-gen=true
+// ModelMeshServingStatus struct holds the status for the ModelMeshServing component.
+type ModelMeshServingStatus struct {
+	ComponentStatus `json:",inline"`
+}
+
+// +k8s:deepcopy-gen=true
+// DataSciencePipelinesStatus struct holds the status for the DataSciencePipelines component.
+type DataSciencePipelinesStatus struct {
+	ComponentStatus `json:",inline"`
+}
+
+// +k8s:deepcopy-gen=true
+// KserveStatus struct holds the status for the Kserve component.
+type KserveStatus struct {
+	ComponentStatus `json:",inline"`
+}
+
+// +k8s:deepcopy-gen=true
+// KueueStatus struct holds the status for the Kueue component.
+type KueueStatus struct {
+	ComponentStatus `json:",inline"`
+}
+
+// +k8s:deepcopy-gen=true
+// CodeFlareStatus struct holds the status for the CodeFlare component.
+type CodeFlareStatus struct {
+	ComponentStatus `json:",inline"`
+}
+
+// +k8s:deepcopy-gen=true
+// RayStatus struct holds the status for the Ray component.
+type RayStatus struct {
+	ComponentStatus `json:",inline"`
+}
+
+// +k8s:deepcopy-gen=true
+// TrustyAIStatus struct holds the status for the TrustyAIStatus component.
+type TrustyAIStatus struct {
+	ComponentStatus `json:",inline"`
+}
+
+// +k8s:deepcopy-gen=true
+// ModelRegistryStatus struct holds the status for the ModelRegistry component.
+type ModelRegistryStatus struct {
+	ComponentStatus     `json:",inline"`
 	RegistriesNamespace string `json:"registriesNamespace,omitempty"`
-	UpstreamReleases    `json:""`
+}
+
+// +k8s:deepcopy-gen=true
+// TrainingOperatorStatus struct holds the status for the TrainingOperator component.
+type TrainingOperatorStatus struct {
+	ComponentStatus `json:",inline"`
+}
+
+// ComponentsStatus defines the custom status of DataScienceCluster components.
+// +k8s:deepcopy-gen=true
+type ComponentsStatus struct {
+	Dashboard            *DashboardStatus            `json:"dashboard,omitempty"`
+	Workbenches          *WorkbenchesStatus          `json:"workbenches,omitempty"`
+	ModelMeshServing     *ModelMeshServingStatus     `json:"modelmeshserving,omitempty"`
+	DataSciencePipelines *DataSciencePipelinesStatus `json:"datasciencepipelines,omitempty"`
+	Kserve               *KserveStatus               `json:"kserve,omitempty"`
+	Kueue                *KueueStatus                `json:"kueue,omitempty"`
+	CodeFlare            *CodeFlareStatus            `json:"codeflare,omitempty"`
+	Ray                  *RayStatus                  `json:"ray,omitempty"`
+	TrustyAI             *TrustyAIStatus             `json:"trustyai,omitempty"`
+	ModelRegistry        *ModelRegistryStatus        `json:"modelregistry,omitempty"`
+	TrainingOperator     *TrainingOperatorStatus     `json:"trainingoperator,omitempty"`
 }

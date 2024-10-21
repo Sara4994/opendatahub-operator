@@ -21,7 +21,6 @@ limitations under the License.
 package v1
 
 import (
-	"github.com/opendatahub-io/opendatahub-operator/v2/controllers/status"
 	conditionsv1 "github.com/openshift/custom-resource-status/conditions/v1"
 	corev1 "k8s.io/api/core/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
@@ -150,13 +149,7 @@ func (in *DataScienceClusterStatus) DeepCopyInto(out *DataScienceClusterStatus) 
 			(*out)[key] = val
 		}
 	}
-	if in.Components != nil {
-		in, out := &in.Components, &out.Components
-		*out = make(map[string]status.ComponentStatus, len(*in))
-		for key, val := range *in {
-			(*out)[key] = *val.DeepCopy()
-		}
-	}
+	in.Components.DeepCopyInto(&out.Components)
 	in.Release.DeepCopyInto(&out.Release)
 }
 

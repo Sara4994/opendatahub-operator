@@ -108,7 +108,7 @@ type DataScienceClusterStatus struct {
 
 	// Expose component's specific status
 	// +optional
-	Components map[string]status.ComponentStatus `json:"components,omitempty"`
+	Components status.ComponentsStatus `json:"components,omitempty"`
 
 	// Version and release type
 	Release cluster.Release `json:"release,omitempty"`
@@ -160,4 +160,8 @@ func (d *DataScienceCluster) GetComponents() ([]components.ComponentInterface, e
 	}
 
 	return allComponents, nil
+}
+
+func (d *DataScienceCluster) GetComponentsStatus() *status.ComponentsStatus {
+	return &d.Status.Components
 }
