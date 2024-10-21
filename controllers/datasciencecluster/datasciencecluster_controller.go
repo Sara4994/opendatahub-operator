@@ -336,22 +336,10 @@ func (r *DataScienceClusterReconciler) reconcileSubComponent(ctx context.Context
 		return instance, err
 	}
 
-	componentUpstreamRelease := component.GetUpstreamReleaseStatus()
-
-	instance, err = status.UpdateWithRetry(ctx, r.Client, instance, func(saved *dscv1.DataScienceCluster) {
-		if saved.Status.Components == nil {
-			saved.Status.Components = make(map[string]status.ComponentStatus)
-		}
-		saved.Status.Components[componentName] = status.ComponentStatus{UpstreamReleases: componentUpstreamRelease}
-	})
-	if err != nil {
-		instance = r.reportError(err, instance, "failed to update Component status after reconciling ")
-
-		return instance, err
-	}
-
 	// reconciliation succeeded: update status accordingly
 	instance, err = status.UpdateWithRetry(ctx, r.Client, instance, func(saved *dscv1.DataScienceCluster) {
+		_ = component.UpdateStatus(&instance.Status.Components)
+
 		if saved.Status.InstalledComponents == nil {
 			saved.Status.InstalledComponents = make(map[string]bool)
 		}
@@ -365,9 +353,9 @@ func (r *DataScienceClusterReconciler) reconcileSubComponent(ctx context.Context
 		// TODO: replace this hack with a full refactor of component status in the future
 		if mr, isMR := component.(*modelregistry.ModelRegistry); isMR {
 			if enabled {
-				saved.Status.Components["ModelRegistry"] = status.ComponentStatus{RegistriesNamespace: mr.RegistriesNamespace}
+				saved.Status.Components.ModelRegistry = &status.ModelRegistryStatus{RegistriesNamespace: mr.RegistriesNamespace}
 			} else {
-				saved.Status.Components["ModelRegistry"] = status.ComponentStatus{}
+				saved.Status.Components.ModelRegistry = nil
 			}
 		}
 	})

@@ -114,37 +114,47 @@ func (k *Kserve) GetComponentName() string {
 	return ComponentName
 }
 
-func (k *Kserve) GetUpstreamReleaseStatus() status.UpstreamReleases {
+func (k *Kserve) UpdateStatus(in *status.ComponentsStatus) error {
 	var componentVersion semver.Version
 	var repositoryURL string
-	var releaseDetails = make([]status.ComponentReleaseStatus, 0)
-	var releaseStatus status.UpstreamReleases
 
 	env, err := godotenv.Read(filepath.Join(deploy.DefaultManifestPath, ComponentName, ".env"))
 
 	if err != nil {
-		return status.UpstreamReleases{}
+		return nil
 	}
 	if env != nil {
 		componentVersion, err = semver.Parse(env["UPSTREAM_RELEASE_VERSION"])
 
 		if err != nil {
-			return status.UpstreamReleases{}
+			return nil
 		}
 		repositoryURL = env["REPOSITORY_URL"]
 	}
-	componentReleaseStatus := status.ComponentReleaseStatus{
-		Name:        status.Platform(ComponentName),
-		DisplayName: ComponentName,
-		Version:     version.OperatorVersion{Version: componentVersion},
-		RepoURL:     repositoryURL}
-	releaseDetails = append(releaseDetails, componentReleaseStatus)
-	releaseStatus.UpstreamRelease = releaseDetails
-	return releaseStatus
+
+	in.CodeFlare = &status.CodeFlareStatus{
+		ComponentStatus: status.ComponentStatus{
+			UpstreamRelease: []status.ComponentReleaseStatus{{
+				Name:        status.Platform(ComponentName),
+				DisplayName: ComponentName,
+				Version:     version.OperatorVersion{Version: componentVersion},
+				RepoURL:     repositoryURL,
+			},
+			},
+		},
+	}
+
+	return nil
 }
 
-func (k *Kserve) ReconcileComponent(ctx context.Context, cli client.Client,
-	owner metav1.Object, dscispec *dsciv1.DSCInitializationSpec, platform cluster.Platform, _ bool) error {
+func (k *Kserve) ReconcileComponent(
+	ctx context.Context,
+	cli client.Client,
+	owner client.Object,
+	dscispec *dsciv1.DSCInitializationSpec,
+	platform cluster.Platform,
+	_ bool,
+) error {
 	l := logf.FromContext(ctx)
 	enabled := k.GetManagementState() == operatorv1.Managed
 	monitoringEnabled := dscispec.Monitoring.ManagementState == operatorv1.Managed

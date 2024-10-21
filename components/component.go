@@ -83,11 +83,10 @@ type ManifestsConfig struct {
 
 type ComponentInterface interface {
 	Init(ctx context.Context, platform cluster.Platform) error
-	ReconcileComponent(ctx context.Context, cli client.Client,
-		owner metav1.Object, DSCISpec *dsciv1.DSCInitializationSpec, platform cluster.Platform, currentComponentStatus bool) error
+	ReconcileComponent(ctx context.Context, cli client.Client, owner client.Object, DSCISpec *dsciv1.DSCInitializationSpec, platform cluster.Platform, currentComponentStatus bool) error
 	Cleanup(ctx context.Context, cli client.Client, owner metav1.Object, DSCISpec *dsciv1.DSCInitializationSpec) error
 	GetComponentName() string
-	GetUpstreamReleaseStatus() status.UpstreamReleases
+	UpdateStatus(status *status.ComponentsStatus) error
 	GetManagementState() operatorv1.ManagementState
 	OverrideManifests(ctx context.Context, platform cluster.Platform) error
 	UpdatePrometheusConfig(cli client.Client, logger logr.Logger, enable bool, component string) error

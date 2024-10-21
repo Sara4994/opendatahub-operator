@@ -648,28 +648,240 @@ spec:
             description: DataScienceClusterStatus defines the observed state of DataScienceCluster.
             properties:
               components:
-                additionalProperties:
-                  properties:
-                    registriesNamespace:
-                      type: string
-                    upstreamrelease:
-                      items:
-                        description: |-
-                          Condition represents the state of the operator's
-                          reconciliation functionality.
-                        properties:
-                          displayname:
-                            type: string
-                          name:
-                            type: string
-                          repourl:
-                            type: string
-                          version:
-                            type: string
-                        type: object
-                      type: array
-                  type: object
                 description: Expose component's specific status
+                properties:
+                  codeflare:
+                    description: CodeFlareStatus struct holds the status for the CodeFlare
+                      component.
+                    properties:
+                      upstreamrelease:
+                        items:
+                          description: |-
+                            Condition represents the state of the operator's
+                            reconciliation functionality.
+                          properties:
+                            displayname:
+                              type: string
+                            name:
+                              type: string
+                            repourl:
+                              type: string
+                            version:
+                              type: string
+                          type: object
+                        type: array
+                    type: object
+                  dashboard:
+                    description: DashboardStatus struct holds the status for the Dashboard
+                      component.
+                    properties:
+                      upstreamrelease:
+                        items:
+                          description: |-
+                            Condition represents the state of the operator's
+                            reconciliation functionality.
+                          properties:
+                            displayname:
+                              type: string
+                            name:
+                              type: string
+                            repourl:
+                              type: string
+                            version:
+                              type: string
+                          type: object
+                        type: array
+                    type: object
+                  datasciencepipelines:
+                    description: DataSciencePipelinesStatus struct holds the status
+                      for the DataSciencePipelines component.
+                    properties:
+                      upstreamrelease:
+                        items:
+                          description: |-
+                            Condition represents the state of the operator's
+                            reconciliation functionality.
+                          properties:
+                            displayname:
+                              type: string
+                            name:
+                              type: string
+                            repourl:
+                              type: string
+                            version:
+                              type: string
+                          type: object
+                        type: array
+                    type: object
+                  kserve:
+                    description: KserveStatus struct holds the status for the Kserve
+                      component.
+                    properties:
+                      upstreamrelease:
+                        items:
+                          description: |-
+                            Condition represents the state of the operator's
+                            reconciliation functionality.
+                          properties:
+                            displayname:
+                              type: string
+                            name:
+                              type: string
+                            repourl:
+                              type: string
+                            version:
+                              type: string
+                          type: object
+                        type: array
+                    type: object
+                  kueue:
+                    description: KueueStatus struct holds the status for the Kueue
+                      component.
+                    properties:
+                      upstreamrelease:
+                        items:
+                          description: |-
+                            Condition represents the state of the operator's
+                            reconciliation functionality.
+                          properties:
+                            displayname:
+                              type: string
+                            name:
+                              type: string
+                            repourl:
+                              type: string
+                            version:
+                              type: string
+                          type: object
+                        type: array
+                    type: object
+                  modelmeshserving:
+                    description: ModelMeshServingStatus struct holds the status for
+                      the ModelMeshServing component.
+                    properties:
+                      upstreamrelease:
+                        items:
+                          description: |-
+                            Condition represents the state of the operator's
+                            reconciliation functionality.
+                          properties:
+                            displayname:
+                              type: string
+                            name:
+                              type: string
+                            repourl:
+                              type: string
+                            version:
+                              type: string
+                          type: object
+                        type: array
+                    type: object
+                  modelregistry:
+                    description: ModelRegistryStatus struct holds the status for the
+                      ModelRegistry component.
+                    properties:
+                      registriesNamespace:
+                        type: string
+                      upstreamrelease:
+                        items:
+                          description: |-
+                            Condition represents the state of the operator's
+                            reconciliation functionality.
+                          properties:
+                            displayname:
+                              type: string
+                            name:
+                              type: string
+                            repourl:
+                              type: string
+                            version:
+                              type: string
+                          type: object
+                        type: array
+                    type: object
+                  ray:
+                    description: RayStatus struct holds the status for the Ray component.
+                    properties:
+                      upstreamrelease:
+                        items:
+                          description: |-
+                            Condition represents the state of the operator's
+                            reconciliation functionality.
+                          properties:
+                            displayname:
+                              type: string
+                            name:
+                              type: string
+                            repourl:
+                              type: string
+                            version:
+                              type: string
+                          type: object
+                        type: array
+                    type: object
+                  trainingoperator:
+                    description: TrainingOperatorStatus struct holds the status for
+                      the TrainingOperator component.
+                    properties:
+                      upstreamrelease:
+                        items:
+                          description: |-
+                            Condition represents the state of the operator's
+                            reconciliation functionality.
+                          properties:
+                            displayname:
+                              type: string
+                            name:
+                              type: string
+                            repourl:
+                              type: string
+                            version:
+                              type: string
+                          type: object
+                        type: array
+                    type: object
+                  trustyai:
+                    description: TrustyAIStatus struct holds the status for the TrustyAIStatus
+                      component.
+                    properties:
+                      upstreamrelease:
+                        items:
+                          description: |-
+                            Condition represents the state of the operator's
+                            reconciliation functionality.
+                          properties:
+                            displayname:
+                              type: string
+                            name:
+                              type: string
+                            repourl:
+                              type: string
+                            version:
+                              type: string
+                          type: object
+                        type: array
+                    type: object
+                  workbenches:
+                    description: WorkbenchesStatus struct holds the status for the
+                      Workbenches component.
+                    properties:
+                      upstreamrelease:
+                        items:
+                          description: |-
+                            Condition represents the state of the operator's
+                            reconciliation functionality.
+                          properties:
+                            displayname:
+                              type: string
+                            name:
+                              type: string
+                            repourl:
+                              type: string
+                            version:
+                              type: string
+                          type: object
+                        type: array
+                    type: object
                 type: object
               conditions:
                 description: Conditions describes the state of the DataScienceCluster

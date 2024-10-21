@@ -13,7 +13,6 @@ import (
 	operatorv1 "github.com/openshift/api/operator/v1"
 	corev1 "k8s.io/api/core/v1"
 	k8serr "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 
@@ -83,13 +82,13 @@ func (d *Dashboard) GetComponentName() string {
 	return ComponentNameUpstream
 }
 
-func (d *Dashboard) GetUpstreamReleaseStatus() status.UpstreamReleases {
-	return status.UpstreamReleases{}
+func (d *Dashboard) UpdateStatus(in *status.ComponentsStatus) error {
+	return nil
 }
 
 func (d *Dashboard) ReconcileComponent(ctx context.Context,
 	cli client.Client,
-	owner metav1.Object,
+	owner client.Object,
 	dscispec *dsciv1.DSCInitializationSpec,
 	platform cluster.Platform,
 	currentComponentExist bool,
