@@ -88,7 +88,8 @@ type ComponentInterface interface {
 	Init(ctx context.Context, platform cluster.Platform) error
 	ReconcileComponent(ctx context.Context, cli client.Client, owner metav1.Object, DSCISpec *dsciv1.DSCInitializationSpec,
 		platform cluster.Platform, currentComponentStatus bool) error
-	Cleanup(ctx context.Context, cli client.Client, owner metav1.Object, DSCISpec *dsciv1.DSCInitializationSpec) error
+	Cleanup(ctx context.Context, cli client.Client,
+		owner metav1.Object, DSCISpec *dsciv1.DSCInitializationSpec) error
 	GetComponentName() string
 	UpdateStatus(status *status.ComponentsStatus)
 	GetManagementState() operatorv1.ManagementState
@@ -201,7 +202,7 @@ func (c *Component) UpdatePrometheusConfig(_ client.Client, logger logr.Logger, 
 	return err
 }
 
-func (c *Component) GetReleaseVersion(defaultManifestPath string, componentName string) status.ComponentStatus {
+func GetReleaseVersion(defaultManifestPath string, componentName string) status.ComponentStatus {
 	var componentVersion semver.Version
 	var repositoryURL string
 	var displayName string
